@@ -29,7 +29,23 @@ A unified, dark-themed control dashboard that brings together OpenClaw control p
 - **Job Search / Investment**
   - Placeholder panels for future expansion.
 
-## Running
+## Prerequisites
+
+- **Node.js** (no external npm dependencies; uses only built-in modules)
+- **OpenClaw CLI** available in `PATH` if you want the Control tab to work (`openclaw sessions|agents|cron`)
+
+## Configuration
+
+Environment variables:
+
+- `PORT` (optional): HTTP port to listen on (default: `3460`)
+
+Local file paths:
+
+- Kanban tasks are stored in `./tasks.json`
+- Todo tasks are read from `/home/debian/projects/todo-list/tasks.json` (see `TODO_FILE` in `server.js` if you need to change this)
+
+## Running (Local)
 
 ```bash
 cd /home/debian/projects/cerebro
