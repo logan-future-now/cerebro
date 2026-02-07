@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cerebro Dashboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f1e;
+      --panel: #111827;
+      --panel-elev: #161f35;
+      --accent: #8b5cf6;
+      --accent-2: #22d3ee;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #1f2937;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --glow: 0 0 30px rgba(139,92,246,0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top left, #151a2c 0%, var(--bg) 45%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 24px 32px 12px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11, 15, 30, 0.9);
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      font-size: 24px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    main {
+      padding: 24px 32px 48px;
+      flex: 1;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .subtabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .subtab-btn {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .subtab-btn.active {
+      color: var(--text);
+      border-color: var(--accent-2);
+      box-shadow: 0 0 20px rgba(34,211,238,0.2);
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .panel h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #c4b5fd;
+    }
+
+    .sessions-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .session-card {
+      background: var(--panel-elev);
+      border: 1px solid #1f2a44;
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .session-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .session-key { font-size: 12px; color: var(--muted); }
+    .session-time { font-size: 12px; color: #9ca3af; }
+
+    .progress {
+      height: 8px;
+      background: #0f172a;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 10px rgba(139,92,246,0.6);
+    }
+
+    .progress-meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .agent-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .agent-row {
+      padding: 10px;
+      border: 1px solid #1f2a44;
+      border-radius: 10px;
+      background: var(--panel-elev);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .agent-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .agent-name { font-weight: 600; font-size: 14px; }
+    .agent-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; }
+    .status-dot.on { background: var(--success); }
+    .agent-work { font-size: 12px; color: #cbd5f5; }
+
+    .cron-table {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cron-row {
+      display: grid;
+      grid-template-columns: 1.4fr 0.6fr 0.8fr 0.8fr;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #1f2a44;
+      border-radius: 12px;
+      background: var(--panel-elev);
+      cursor: pointer;
+      transition: border 0.2s ease;
+    }
+
+    .cron-row:hover { border-color: var(--accent); }
+    .cron-row span { font-size: 12px; color: var(--muted); }
+    .cron-name { font-weight: 600; color: var(--text); }
+
+    .placeholder {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      border: 1px dashed #1f2a44;
+      border-radius: 12px;
+      background: rgba(17,24,39,0.4);
+    }
+
+    .board-layout {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .board { display: flex; flex-direction: column; gap: 24px; flex: 1; }
+
+    .lane {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .lane-header {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lane-header .count {
+      background: #1f2937;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .lane-columns {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .column {
+      background: #16213e;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+    }
+
+    .column-header {
+      padding: 12px 16px;
+      font-weight: 600;
+      border-bottom: 2px solid #0f3460;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .column-header .count { background: #0f3460; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+    .tasks { padding: 12px; flex: 1; min-height: 160px; }
+    .tasks.drag-over { background: #1f2f5a; }
+
+    .task {
+      background: #0f3460;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: grab;
+      border-left: 3px solid #8b5cf6;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .task.trashed {
+      background: #0b2b4c;
+      border: 1px dashed #334155;
+      border-left: 3px solid #64748b;
+      opacity: 0.9;
+    }
+
+    .task.priority-high { border-left-color: var(--danger); }
+    .task.priority-medium { border-left-color: var(--warning); }
+    .task.priority-low { border-left-color: var(--success); }
+    .task:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .task.dragging { opacity: 0.5; cursor: grabbing; }
+
+    .task-title { font-weight: 500; margin-bottom: 4px; }
+    .task-desc { font-size: 12px; color: #aaa; white-space: pre-wrap; }
+    .task-meta { font-size: 11px; color: #666; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+    .priority-pill {
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      background: #1f2937;
+      color: #d1d5db;
+    }
+
+    .priority-pill.high { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
+    .priority-pill.medium { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
+    .priority-pill.low { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
+
+    .task-actions { opacity: 0; transition: opacity 0.2s; }
+    .task:hover .task-actions { opacity: 1; }
+    .task-actions button { background: none; border: none; color: #888; cursor: pointer; padding: 2px 6px; font-size: 12px; }
+    .task-actions button:hover { color: #fff; }
+    .task-actions button.danger { color: #f87171; }
+    .task-actions button.danger:hover { color: #fecaca; }
+
+    .add-task {
+      margin: 12px;
+      padding: 10px;
+      background: #0f3460;
+      border: 2px dashed #1f4068;
+      border-radius: 6px;
+      color: #888;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .add-task:hover { border-color: var(--accent); color: var(--accent); }
+
+    .agent-sidebar {
+      width: 280px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      position: sticky;
+      top: 100px;
+      height: fit-content;
+    }
+
+    .sidebar-header {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-header .count {
+      background: #1f2937;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .agent-empty { font-size: 12px; color: #6b7280; text-align: center; padding: 12px; }
+
+    .toolbar { display:flex; justify-content:center; gap:10px; margin-bottom:16px; }
+    .toolbar button { background:#0f3460; border:1px solid #1f4068; color:#ddd; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    .toolbar button.active { border-color: var(--accent); color: var(--accent); }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: #16213e;
+      padding: 24px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 520px;
+    }
+
+    .modal h2 { margin-bottom: 16px; }
+    .modal input, .modal textarea, .modal select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      background: #0f3460;
+      color: #eee;
+      font-family: inherit;
+    }
+    .modal textarea { min-height: 120px; resize: vertical; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .modal button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: #0f3460; color: #aaa; }
+    .btn-danger { background: #dc2626; color: #fff; }
+
+    .sync-status { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #666; }
+
+    .todo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .todo-column {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .todo-item {
+      background: var(--panel-elev);
+      border: 1px solid #1f2a44;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .todo-item small { display: block; color: var(--muted); margin-top: 6px; font-size: 11px; }
+
+    @media (max-width: 980px) {
+      .board-layout { flex-direction: column; }
+      .agent-sidebar { width: 100%; position: static; }
+      header { position: static; }
+    }
+
+    @media (max-width: 720px) {
+      main { padding: 20px; }
+      header { padding: 18px 20px 10px; }
+      .cron-row { grid-template-columns: 1fr; }
+      .title-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title-row">
+        <div class="brand">
+          <h1>Cerebro</h1>
+          <span>Unified command deck</span>
+        </div>
+        <div class="meta" id="status-meta"></div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="control">Control</button>
+        <button class="tab-btn" data-tab="taskboard">Task Board</button>
+        <button class="tab-btn" data-tab="todo">Todo List</button>
+        <button class="tab-btn" data-tab="jobs">Job Search</button>
+        <button class="tab-btn" data-tab="investment">Investment</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="tab-panel active" id="tab-control">
+        <div class="subtabs">
+          <button class="subtab-btn active" data-subtab="sessions">Sessions</button>
+          <button class="subtab-btn" data-subtab="agents">Agents</button>
+          <button class="subtab-btn" data-subtab="cron">Cron Jobs</button>
+        </div>
+
+        <div class="subtab-panel" id="subtab-sessions">
+          <div class="panel">
+            <h3>Sessions</h3>
+            <div class="sessions-list" id="sessions-list"></div>
+          </div>
+        </div>
+
+        <div class="subtab-panel" id="subtab-agents" style="display:none;">
+          <div class="panel">
+            <h3>Agents</h3>
+            <div class="agent-list" id="agents-control-list"></div>
+          </div>
+        </div>
+
+        <div class="subtab-panel" id="subtab-cron" style="display:none;">
+          <div class="panel">
+            <h3>Cron Jobs</h3>
+            <div class="cron-table" id="cron-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-taskboard">
+        <div class="toolbar">
+          <button id="toggle-trash" onclick="toggleTrash()">Show Trash</button>
+          <button id="empty-trash" onclick="emptyTrash()">Empty Trash</button>
+        </div>
+        <div class="board-layout">
+          <div class="board" id="board"></div>
+          <aside class="agent-sidebar">
+            <div class="sidebar-header">
+              <span>Agents</span>
+              <span id="agents-count" class="count">0</span>
+            </div>
+            <div id="agents-list"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-todo">
+        <div class="panel">
+          <h3>Todo List</h3>
+          <div class="todo-grid" id="todo-grid"></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-jobs">
+        <div class="placeholder">Job Search workspace coming soon.</div>
+      </section>
+
+      <section class="tab-panel" id="tab-investment">
+        <div class="subtabs">
+          <button class="subtab-btn active" data-subtab="inv-news">News</button>
+          <button class="subtab-btn" data-subtab="inv-research">Research</button>
+          <button class="subtab-btn" data-subtab="inv-portfolio">Portfolio</button>
+        </div>
+        <div class="subtab-panel" id="subtab-inv-news">
+          <div class="placeholder">Investment News panel in development.</div>
+        </div>
+        <div class="subtab-panel" id="subtab-inv-research" style="display:none;">
+          <div class="placeholder">Research insights coming soon.</div>
+        </div>
+        <div class="subtab-panel" id="subtab-inv-portfolio" style="display:none;">
+          <div class="placeholder">Portfolio snapshot loading later.</div>
+        </div>
+      </section>
+    </main>
+
+    <div class="sync-status" id="sync">⏳</div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Add Task</h2>
+      <input type="text" id="task-title" placeholder="Task title">
+      <textarea id="task-desc" placeholder="Description (optional)"></textarea>
+      <input type="text" id="task-project" placeholder="Project" list="project-list">
+      <datalist id="project-list"></datalist>
+      <select id="task-priority">
+        <option value="high">High priority</option>
+        <option value="medium" selected>Medium priority</option>
+        <option value="low">Low priority</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-danger" id="delete-btn" onclick="deleteTask()" style="display:none">Delete</button>
+        <button class="btn-primary" onclick="saveTask()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="cron-modal">
+    <div class="modal-content">
+      <h2 id="cron-modal-title">Cron Job</h2>
+      <textarea id="cron-modal-body" readonly></textarea>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeCronModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/tasks';
+    const AGENTS_API = '/api/agents';
+    const SESSIONS_API = '/api/sessions';
+    const CRON_API = '/api/cron';
+    const TODOS_API = '/api/todos';
+    const COLUMNS = ['Backlog', 'In Progress', 'Blocked', 'Done'];
+    const DEFAULT_PROJECT = 'General';
+    const DEFAULT_PRIORITY = 'medium';
+    let tasks = [];
+    let agents = [];
+    let editingId = null;
+    let showTrash = false;
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+    const subtabButtons = document.querySelectorAll('.subtab-btn');
+    subtabButtons.forEach(btn => btn.addEventListener('click', () => switchSubtab(btn)));
+
+    function switchTab(tab) {
+      tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `tab-${tab}`);
+      });
+    }
+
+    function switchSubtab(btn) {
+      const parent = btn.closest('.tab-panel');
+      parent.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      parent.querySelectorAll('.subtab-panel').forEach(panel => {
+        panel.style.display = panel.id === `subtab-${btn.dataset.subtab}` ? 'block' : 'none';
+      });
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(API);
+        tasks = await res.json();
+        render();
+        document.getElementById('sync').textContent = '✅ synced';
+      } catch (e) {
+        document.getElementById('sync').textContent = '❌ offline';
+      }
+    }
+
+    async function loadAgents() {
+      try {
+        const res = await fetch(AGENTS_API);
+        if (!res.ok) throw new Error('Failed to load agents');
+        const data = await res.json();
+        agents = Array.isArray(data?.agents) ? data.agents : [];
+        renderAgents();
+        renderControlAgents();
+      } catch (e) {
+        agents = [];
+        const list = document.getElementById('agents-list');
+        if (list) list.innerHTML = `<div class="agent-empty">Agent status unavailable</div>`;
+      }
+    }
+
+    async function loadSessions() {
+      try {
+        const res = await fetch(SESSIONS_API);
+        if (!res.ok) throw new Error('Failed to load sessions');
+        const data = await res.json();
+        renderSessions(Array.isArray(data.sessions) ? data.sessions : []);
+      } catch (e) {
+        document.getElementById('sessions-list').innerHTML = `<div class="agent-empty">Session data unavailable</div>`;
+      }
+    }
+
+    async function loadCron() {
+      try {
+        const res = await fetch(CRON_API);
+        if (!res.ok) throw new Error('Failed to load cron');
+        const data = await res.json();
+        renderCron(Array.isArray(data.jobs) ? data.jobs : []);
+      } catch (e) {
+        document.getElementById('cron-list').innerHTML = `<div class="agent-empty">Cron data unavailable</div>`;
+      }
+    }
+
+    async function loadTodos() {
+      try {
+        const res = await fetch(TODOS_API);
+        const data = await res.json();
+        const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+        renderTodos(tasks);
+      } catch (e) {
+        document.getElementById('todo-grid').innerHTML = `<div class="agent-empty">Todo data unavailable</div>`;
+      }
+    }
+
+    async function api(method, path = '', body = null) {
+      document.getElementById('sync').textContent = '⏳';
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      await fetch(API + path, opts);
+      await loadTasks();
+    }
+
+    function normalizedTask(task) {
+      return {
+        ...task,
+        project: task.project || DEFAULT_PROJECT,
+        priority: task.priority || DEFAULT_PRIORITY
+      };
+    }
+
+    function render() {
+      const board = document.getElementById('board');
+      const normalizedTasks = tasks.map(normalizedTask);
+      const projects = Array.from(new Set(normalizedTasks.map(t => t.project))).sort((a, b) => a.localeCompare(b));
+
+      document.getElementById('project-list').innerHTML = projects.map(p => `<option value="${esc(p)}"></option>`).join('');
+      const trashBtn = document.getElementById('toggle-trash');
+      trashBtn.classList.toggle('active', showTrash);
+      trashBtn.textContent = showTrash ? 'Hide Trash' : 'Show Trash';
+
+      board.innerHTML = projects.map(project => {
+        const projectTasks = normalizedTasks.filter(t => t.project === project);
+        const visibleProjectTasks = projectTasks.filter(t => showTrash || !t.trashed);
+        return `
+          <div class="lane">
+            <div class="lane-header">
+              <span>${esc(project)}</span>
+              <span class="count">${visibleProjectTasks.length}</span>
+            </div>
+            <div class="lane-columns">
+              ${COLUMNS.map(col => {
+                const colTasks = projectTasks.filter(t => t.column === col && (showTrash || !t.trashed));
+                return `
+                  <div class="column">
+                    <div class="column-header">
+                      <span>${col}</span>
+                      <span class="count">${colTasks.length}</span>
+                    </div>
+                    <div class="tasks" data-column="${col}" data-project="${esc(project)}"
+                         ondrop="drop(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)">
+                      ${colTasks.map(t => `
+                        <div class="task priority-${t.priority} ${t.trashed ? 'trashed' : ''}" draggable="true" data-id="${t.id}"
+                             ondragstart="dragStart(event)" ondragend="dragEnd(event)">
+                          <div class="task-title">${esc(t.title)}</div>
+                          ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ''}
+                          <div class="task-meta">
+                            <span>${new Date(t.created).toLocaleDateString()}</span>
+                            <span class="priority-pill ${t.priority}">${t.priority}</span>
+                            <span class="task-actions">
+                              <button onclick="editTask('${t.id}')">✏️</button>
+                              ${col === 'Done' && !t.trashed ? `<button class="danger" onclick="trashTask('${t.id}', '${col}')">🗑️</button>` : ''}
+                              ${t.trashed && showTrash ? `<button onclick="restoreTask('${t.id}', '${t.trashedFrom || col}')">♻️</button>` : ''}
+                            </span>
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                    ${col === 'Backlog' ? `<div class="add-task" onclick="openModal(null, '${esc(project)}')">+ Add Task</div>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAgents() {
+      const list = document.getElementById('agents-list');
+      const countEl = document.getElementById('agents-count');
+      countEl.textContent = agents.length;
+
+      if (!agents.length) {
+        list.innerHTML = `<div class="agent-empty">No agents found</div>`;
+        return;
+      }
+
+      list.innerHTML = agents.map(agent => {
+        const name = esc(agent.name || agent.id || 'Unknown');
+        const currentWork = agent.currentWork || '';
+        const isOn = agent.status === 'active';
+        return `
+          <div class="agent-row">
+            <div class="agent-header">
+              <div class="agent-name">${agent.emoji ? agent.emoji + ' ' : ''}${name}</div>
+              <div class="agent-status">
+                <span class="status-dot ${isOn ? 'on' : ''}"></span>
+                <span>${isOn ? 'on' : 'off'}</span>
+              </div>
+            </div>
+            <div class="agent-work">${currentWork ? esc(currentWork) : '<em>Idle</em>'}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderControlAgents() {
+      const list = document.getElementById('agents-control-list');
+      if (!agents.length) {
+        list.innerHTML = `<div class="agent-empty">No agents found</div>`;
+        return;
+      }
+      list.innerHTML = agents.map(agent => {
+        const name = esc(agent.name || agent.id || 'Unknown');
+        const currentWork = agent.currentWork || '';
+        const isOn = agent.status === 'active';
+        return `
+          <div class="agent-row">
+            <div class="agent-header">
+              <div class="agent-name">${agent.emoji ? agent.emoji + ' ' : ''}${name}</div>
+              <div class="agent-status">
+                <span class="status-dot ${isOn ? 'on' : ''}"></span>
+                <span>${isOn ? 'on' : 'off'}</span>
+              </div>
+            </div>
+            <div class="agent-work">${currentWork ? esc(currentWork) : '<em>Idle</em>'}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSessions(sessions) {
+      const list = document.getElementById('sessions-list');
+      if (!sessions.length) {
+        list.innerHTML = `<div class="agent-empty">No sessions available</div>`;
+        return;
+      }
+
+      const sorted = [...sessions].sort((a, b) => b.updatedAt - a.updatedAt);
+      list.innerHTML = sorted.map(session => {
+        const total = session.totalTokens || 0;
+        const context = session.contextTokens || 0;
+        const percent = context ? Math.min(100, Math.round((total / context) * 100)) : 0;
+        return `
+          <div class="session-card">
+            <div class="session-row">
+              <div class="session-key">${esc(session.key)}</div>
+              <div class="session-time">${timeAgo(session.updatedAt)}</div>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" style="width:${percent}%"></div>
+            </div>
+            <div class="progress-meta">
+              <span>${formatNumber(total)} / ${context ? formatNumber(context) : '—'} tokens</span>
+              <span>${context ? percent + '%' : 'n/a'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCron(jobs) {
+      const list = document.getElementById('cron-list');
+      if (!jobs.length) {
+        list.innerHTML = `<div class="agent-empty">No cron jobs scheduled</div>`;
+        return;
+      }
+      list.innerHTML = jobs.map(job => {
+        const schedule = job.schedule || {};
+        const scheduleText = schedule.kind === 'cron'
+          ? `${schedule.expr || ''} ${schedule.tz ? '(' + schedule.tz + ')' : ''}`
+          : schedule.kind === 'interval'
+            ? `${schedule.everySeconds || ''}s interval`
+            : schedule.kind || '—';
+        const nextRun = job.state?.nextRunAtMs ? new Date(job.state.nextRunAtMs).toLocaleString() : '—';
+        return `
+          <div class="cron-row" onclick="openCronModal('${esc(job.name || job.id)}', ${JSON.stringify(esc(job.payload?.message || 'No prompt'))})">
+            <div>
+              <div class="cron-name">${esc(job.name || job.id)}</div>
+              <span>${esc(job.id)}</span>
+            </div>
+            <div>
+              <div class="cron-name">Agent</div>
+              <span>${esc(job.agentId || '—')}</span>
+            </div>
+            <div>
+              <div class="cron-name">Schedule</div>
+              <span>${esc(scheduleText)}</span>
+            </div>
+            <div>
+              <div class="cron-name">Next Run</div>
+              <span>${esc(nextRun)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTodos(todoTasks) {
+      const grid = document.getElementById('todo-grid');
+      if (!todoTasks.length) {
+        grid.innerHTML = `<div class="agent-empty">No todo items found</div>`;
+        return;
+      }
+      const categories = {};
+      todoTasks.forEach(task => {
+        const cat = task.category || 'general';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(task);
+      });
+      grid.innerHTML = Object.entries(categories).map(([cat, items]) => {
+        return `
+          <div class="todo-column">
+            <h3>${esc(cat)}</h3>
+            ${items.map(item => `
+              <div class="todo-item">
+                ${esc(item.title)}
+                ${item.notes ? `<small>${esc(item.notes)}</small>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function esc(s) { return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    function timeAgo(ms) {
+      if (!ms) return '—';
+      const diff = Date.now() - ms;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString();
+    }
+
+    function openCronModal(title, message) {
+      document.getElementById('cron-modal-title').textContent = title;
+      document.getElementById('cron-modal-body').value = message;
+      document.getElementById('cron-modal').classList.add('active');
+    }
+
+    function closeCronModal() {
+      document.getElementById('cron-modal').classList.remove('active');
+    }
+
+    function openModal(id = null, project = DEFAULT_PROJECT) {
+      editingId = id;
+      const task = id ? tasks.find(t => t.id === id) : null;
+      document.getElementById('modal-title').textContent = task ? 'Edit Task' : 'Add Task';
+      document.getElementById('task-title').value = task?.title || '';
+      document.getElementById('task-desc').value = task?.desc || '';
+      document.getElementById('task-project').value = task?.project || project || DEFAULT_PROJECT;
+      document.getElementById('task-priority').value = (task?.priority || DEFAULT_PRIORITY).toLowerCase();
+      document.getElementById('delete-btn').style.display = task ? 'block' : 'none';
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('task-title').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      editingId = null;
+    }
+
+    async function saveTask() {
+      const title = document.getElementById('task-title').value.trim();
+      if (!title) return;
+      const desc = document.getElementById('task-desc').value.trim();
+      const project = document.getElementById('task-project').value.trim() || DEFAULT_PROJECT;
+      const priority = document.getElementById('task-priority').value || DEFAULT_PRIORITY;
+
+      if (editingId) {
+        await api('PUT', '/' + editingId, { title, desc, project, priority });
+      } else {
+        await api('POST', '', { title, desc, column: 'Backlog', project, priority });
+      }
+      closeModal();
+    }
+
+    function editTask(id) { openModal(id); }
+
+    async function deleteTask() {
+      if (editingId && confirm('Delete this task?')) {
+        await api('DELETE', '/' + editingId);
+        closeModal();
+      }
+    }
+
+    async function trashTask(id, col) {
+      if (id) {
+        await api('PUT', '/' + id, { trashed: true, trashedFrom: col });
+      }
+    }
+
+    async function restoreTask(id, col) {
+      if (id) {
+        await api('PUT', '/' + id, { trashed: false, trashedFrom: null, column: col || 'Done' });
+      }
+    }
+
+    async function toggleTrash() {
+      showTrash = !showTrash;
+      render();
+    }
+
+    async function emptyTrash() {
+      const trashed = tasks.filter(t => t.trashed);
+      for (const t of trashed) {
+        await api('DELETE', '/' + t.id);
+      }
+    }
+
+    let draggedId = null;
+    function dragStart(e) {
+      draggedId = e.target.dataset.id;
+      e.target.classList.add('dragging');
+    }
+    function dragEnd(e) { e.target.classList.remove('dragging'); }
+    function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+    async function drop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      const col = e.currentTarget.dataset.column;
+      const project = e.currentTarget.dataset.project || DEFAULT_PROJECT;
+      const task = tasks.find(t => t.id === draggedId);
+      if (!task) return;
+      const update = {};
+      if (task.column !== col) update.column = col;
+      if ((task.project || DEFAULT_PROJECT) !== project) update.project = project;
+      if (Object.keys(update).length) {
+        await api('PUT', '/' + draggedId, update);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeCronModal();
+      }
+    });
+
+    loadTasks();
+    loadAgents();
+    loadSessions();
+    loadCron();
+    loadTodos();
+
+    setInterval(loadTasks, 6000);
+    setInterval(loadAgents, 8000);
+    setInterval(loadSessions, 12000);
+    setInterval(loadCron, 20000);
+  </script>
+</body>
+</html>

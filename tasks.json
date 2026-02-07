@@ -1,0 +1,299 @@
+[
+  {
+    "title": "Android client scaffold (Kotlin/Compose)",
+    "desc": "Scaffolded /home/debian/clawd/android-logan-client with Pair/Chat/Stats/Settings stubs, token store stub, WS+Retrofit skeleton. Default base URL now points to sidecar (http://vps-73cb38b6:18790).",
+    "column": "Done",
+    "id": "and-scaffold",
+    "created": 1769781120000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Go sidecar scaffold (docker-compose)",
+    "desc": "Scaffolded /home/debian/clawd/logan-sidecar with docker-compose on port 18790.",
+    "column": "Done",
+    "id": "sidecar-scaffold",
+    "created": 1769783145000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Sidecar: pairing + auth middleware",
+    "desc": "Implemented /pair (PAIR_SECRET -> bearer token persisted) and auth required for /stats,/voice,/ws. Added host networking notes and env example.",
+    "column": "Done",
+    "id": "sidecar-auth",
+    "created": 1769819338000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Sidecar: /stats proxies gateway status",
+    "desc": "Sidecar connects to gateway WS and calls method=status. Fixed connect params to use client.id=gateway-client and client.mode=backend.",
+    "column": "Done",
+    "id": "sidecar-stats",
+    "created": 1769820200000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Sidecar: /ws real chat bridge",
+    "desc": "Replace echo websocket with a bridge: client sends text -> sidecar calls gateway (send/agent) and streams events back.",
+    "column": "Done",
+    "id": "sidecar-ws-bridge",
+    "created": 1769820610000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Sidecar: /voice end-to-end",
+    "desc": "Implemented: saves upload, transcribes via Whisper API, injects transcript into chat session. Requires OPENAI_API_KEY.",
+    "column": "Done",
+    "id": "sidecar-voice",
+    "created": 1769820620000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Android: stats screen wiring",
+    "desc": "Stats screen calls sidecar /stats with bearer token, shows gateway status, restart/cost best-effort, and raw JSON.",
+    "column": "Done",
+    "id": "android-stats",
+    "created": 1769820630000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Sidecar: expose Kanban API",
+    "desc": "Added authenticated Kanban CRUD endpoints backed by KANBAN_PATH (default DATA_DIR/kanban/tasks.json).",
+    "column": "Done",
+    "id": "sidecar-kanban-api",
+    "created": 1769820735217,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Research LinkedIn job search approach",
+    "desc": "Evaluate options: LinkedIn API (limited), browser automation, manual hybrid. Determine what's feasible and compliant. Document approach.",
+    "column": "Done",
+    "id": "li-research",
+    "created": 1769960500000,
+    "project": "LinkedIn Job Search",
+    "priority": "high",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Define job requirements profile",
+    "desc": "Created structured profile at memory/job-profile.json with Tee's info: 14+ years exp, Go/Python/TypeScript/Ruby, targeting Staff SWE/EM/Platform roles, $170-220k, remote only, Florida, available immediately.",
+    "column": "Done",
+    "id": "li-profile",
+    "created": 1769960500001,
+    "project": "LinkedIn Job Search",
+    "priority": "high",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Build job search automation",
+    "desc": "Implement search based on profile criteria. Filter and rank results by match score. Store candidates in local DB.",
+    "column": "Done",
+    "id": "li-search",
+    "created": 1769960500002,
+    "project": "LinkedIn Job Search",
+    "priority": "high",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Create resume generator",
+    "desc": "Generate tailored resume from profile + job description. Highlight relevant experience. Output PDF/DOCX.",
+    "column": "Done",
+    "id": "li-resume",
+    "created": 1769960500003,
+    "project": "LinkedIn Job Search",
+    "priority": "high",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Create cover letter generator",
+    "desc": "Generate personalized cover letter matching job posting. Use company research + role requirements.",
+    "column": "Done",
+    "id": "li-cover",
+    "created": 1769960500004,
+    "project": "LinkedIn Job Search",
+    "priority": "high",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Build review/approval workflow",
+    "desc": "Send job+resume+cover letter to Tee via email for review. Allow approve/reject/edit feedback loop. Requires SMTP setup (pending Google Workspace account).",
+    "column": "Done",
+    "id": "li-workflow",
+    "created": 1769960500005,
+    "project": "LinkedIn Job Search",
+    "priority": "high",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "Research Tastytrade & E-Trade APIs",
+    "desc": "Document auth flows, endpoints, rate limits, data available. Identify any SDK/libraries. Note: may need OAuth setup.",
+    "column": "Done",
+    "id": "port-api-research",
+    "created": 1769960600000,
+    "project": "Portfolio Tracker",
+    "priority": "medium"
+  },
+  {
+    "title": "Design portfolio data model",
+    "desc": "Schema for accounts, positions, transactions, cost basis, realized/unrealized gains. SQLite recommended.",
+    "column": "Done",
+    "id": "port-datamodel",
+    "created": 1769960600001,
+    "project": "Portfolio Tracker",
+    "priority": "medium"
+  },
+  {
+    "title": "Set up SQLite + API scaffold",
+    "desc": "Create web app scaffold with SQLite backend. REST API for positions, accounts, sync. Mobile-first responsive.",
+    "column": "Done",
+    "id": "port-scaffold",
+    "created": 1769960600002,
+    "project": "Portfolio Tracker",
+    "priority": "medium"
+  },
+  {
+    "title": "Build brokerage sync integration",
+    "desc": "Connect to Tastytrade + E-Trade APIs. Pull positions, transactions. Handle auth tokens securely.\n\nCompleted:\n- Created broker adapter pattern with unified interface (base.py)\n- Implemented Tastytrade adapter with OAuth 2.0 and automatic session refresh\n- Built sync service to orchestrate account/position/transaction syncs\n- Added FastAPI endpoints (/api/sync/run, /api/sync/status)\n- Full documentation in SYNC_README.md\n- E-Trade adapter design ready (blocked on API keys from Tee)\n\nTastytrade features: sandbox support, non-expiring refresh tokens, auto-refresh 15min sessions.\nSync strategy: positions snapshot-based, transactions incremental, accounts upserted.",
+    "column": "Done",
+    "id": "port-sync",
+    "created": 1769960600003,
+    "project": "Portfolio Tracker",
+    "priority": "medium"
+  },
+  {
+    "title": "Build asset allocation dashboard",
+    "desc": "Show allocation by asset class, sector, account. Charts + tables. Cost basis, current value, gain/loss.",
+    "column": "Done",
+    "id": "port-dashboard",
+    "created": 1769960600004,
+    "project": "Portfolio Tracker",
+    "priority": "medium"
+  },
+  {
+    "title": "Define news sources for scraper",
+    "desc": "Identify RSS feeds, APIs, sites to scrape for portfolio/watchlist news. Document sources + access methods.",
+    "column": "Done",
+    "id": "news-sources",
+    "created": 1769960700000,
+    "project": "News Scraper",
+    "priority": "medium"
+  },
+  {
+    "title": "Build news ingestion pipeline",
+    "desc": "Fetch news from defined sources. Parse, dedupe, store. Tag by ticker/asset. Schedule periodic refresh.",
+    "column": "Done",
+    "id": "news-ingest",
+    "created": 1769960700001,
+    "project": "News Scraper",
+    "priority": "medium"
+  },
+  {
+    "title": "Create watchlist data model",
+    "desc": "Schema for watchlist items (tickers, target prices, notes). Link to news + portfolio.",
+    "column": "Done",
+    "id": "news-watchlist",
+    "created": 1769960700002,
+    "project": "News Scraper",
+    "priority": "medium"
+  },
+  {
+    "title": "Implement sentiment analysis",
+    "desc": "Analyze news for sentiment (bullish/bearish/neutral). Track sentiment trends over time.",
+    "column": "Done",
+    "id": "news-sentiment",
+    "created": 1769960700003,
+    "project": "News Scraper",
+    "priority": "medium"
+  },
+  {
+    "title": "Build macro/micro reasoning skill",
+    "desc": "LLM-based reasoning module built at /home/debian/clawd/news-scraper/reasoning.py.\nFeatures:\n- MACRO level: identifies affected indices, sectors, asset classes, regions\n- MICRO level: identifies affected tickers, competitors, supply chain\n- Uses OpenAI API (gpt-4o-mini default) with structured JSON output\n- Caches results in SQLite (article_reasoning, reasoning_ticker_impacts, reasoning_macro_impacts tables)\n- API endpoints: /api/reasoning/article/:id, /api/reasoning/ticker/:ticker, /api/reasoning/sector/:sector, /api/reasoning/batch, /api/reasoning/recent\n- CLI support: python reasoning.py --article-id N, --batch N, --ticker X, --sector Y",
+    "column": "Done",
+    "id": "news-reasoning",
+    "created": 1769960700004,
+    "project": "News Scraper",
+    "priority": "medium"
+  },
+  {
+    "title": "Build news alerts/notifications",
+    "desc": "Built alerts.py module at /home/debian/clawd/news-scraper/alerts.py.\nFeatures:\n- Monitors articles for watched tickers (from config or watchlist_items table)\n- Configurable thresholds: sentiment_threshold (default 0.5), confidence_threshold (default 0.6)\n- Cooldown to prevent spam (default 60 min per ticker)\n- Duplicate detection via sent_alerts table\n- Slack notifications via OpenClaw gateway (http://localhost:18788/api/send)\n- Config file: alert_config.json with all thresholds and settings\n- CLI: alerts.py run [--dry-run], alerts.py config [--show|--add-ticker|--remove-ticker], alerts.py history, alerts.py cleanup\n- Cron-friendly: returns JSON, exits cleanly",
+    "column": "Done",
+    "id": "news-alerts",
+    "created": 1769960700005,
+    "project": "News Scraper",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "[Tee] Create GitHub account for Logan",
+    "desc": "Set up a GitHub account so Logan can push code, create repos, and contribute.",
+    "column": "Done",
+    "id": "tee-github",
+    "created": 1769985400000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "[Tee] Create Google account for Logan",
+    "desc": "Google Workspace account for email (SMTP), calendar access, etc.",
+    "column": "Done",
+    "id": "tee-google",
+    "created": 1769985400001,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  },
+  {
+    "title": "[Tee] Add E-Trade API keys to env",
+    "desc": "Get keys from https://us.etrade.com/etx/ris/apikey, sign API agreement, add ETRADE_CONSUMER_KEY and ETRADE_CONSUMER_SECRET to gateway env.",
+    "column": "Blocked",
+    "id": "tee-etrade-keys",
+    "created": 1769985400002,
+    "project": "Portfolio Tracker",
+    "priority": "high"
+  },
+  {
+    "title": "Implement graceful gateway shutdown with queue draining",
+    "desc": "Add graceful shutdown handler that waits for active agent runs and queued messages to complete (with timeout). Currently gateway aborts all runs immediately on restart, losing in-flight work. Should: (1) Set drain timeout (10-30s configurable), (2) Wait for FOLLOWUP_QUEUES to empty, (3) Wait for active runs to complete, (4) Hard-shutdown after timeout. Prevents data loss during deployments. Analysis at /home/debian/clawd/work/gateway-restart-analysis.md\n\nImplemented by coding agent:\n- Created src/gateway/graceful-drain.ts with drain logic\n- Exposed queue accessors in src/auto-reply/reply/queue/state.ts\n- Added ChatRunRegistry.size() for counting active runs\n- Integrated drain into src/gateway/server-close.ts\n- Updated config types and schema for gateway.shutdown.graceful\n- Added unit tests in src/gateway/graceful-drain.test.ts\n- Disabled by default (opt-in via config)",
+    "column": "Done",
+    "id": "gateway-graceful-shutdown",
+    "created": 1738652100000,
+    "project": "General",
+    "priority": "medium",
+    "trashed": true,
+    "trashedFrom": "Done"
+  }
+]
