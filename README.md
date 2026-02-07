@@ -38,6 +38,35 @@ node server.js
 
 Then visit: `http://localhost:3460`
 
+## Production Service (systemd)
+
+Cerebro is deployed as a **systemd** service (simpler than Docker for a single Node process, and it preserves access to the host-installed `openclaw` CLI).
+
+Service unit: `/etc/systemd/system/cerebro.service`
+
+Common commands:
+
+```bash
+# start/stop/restart
+sudo systemctl start cerebro
+sudo systemctl stop cerebro
+sudo systemctl restart cerebro
+
+# enable at boot
+sudo systemctl enable cerebro
+
+# status + logs
+sudo systemctl status cerebro
+journalctl -u cerebro -f
+```
+
+The service is configured to:
+- Start automatically on reboot (`systemctl enable`)
+- Restart automatically on failure (`Restart=on-failure`)
+- Run as user `debian`
+- Expose port `3460` (set via `PORT=3460`)
+- Include `openclaw` in `PATH` (via an explicit `Environment=PATH=...` in the unit)
+
 ## Notes for Other Agents
 
 - **Server-side APIs** live in `server.js`. Update these if you need additional OpenClaw data.
