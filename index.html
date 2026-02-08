@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cerebro Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       color-scheme: dark;
@@ -58,6 +59,13 @@
       display: flex;
       align-items: center;
       gap: 12px;
+    }
+
+    .brand img {
+      height: 48px;
+      width: auto;
+      border-radius: 8px;
+      filter: drop-shadow(0 0 20px rgba(139,92,246,0.4));
     }
 
     .brand h1 {
@@ -174,6 +182,14 @@
 
     .session-key { font-size: 12px; color: var(--muted); }
     .session-time { font-size: 12px; color: #9ca3af; }
+    .session-model {
+      font-size: 12px;
+      color: #c7d2fe;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.35);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
 
     .progress {
       height: 8px;
@@ -482,6 +498,133 @@
       .cron-row { grid-template-columns: 1fr; }
       .title-row { flex-direction: column; align-items: flex-start; }
     }
+
+    /* Portfolio Dashboard Styles */
+    .portfolio-dashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .portfolio-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .summary-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .chart-container {
+      max-width: 300px;
+      margin: 0 auto;
+      padding: 20px 0;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .portfolio-table {
+      width: 100%;
+      font-size: 13px;
+      border-collapse: collapse;
+    }
+
+    .portfolio-table thead {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .portfolio-table th {
+      padding: 10px 8px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .portfolio-table td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #1f2a44;
+    }
+
+    .portfolio-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .portfolio-table .text-right {
+      text-align: right;
+    }
+
+    .pl-positive {
+      color: var(--success);
+    }
+
+    .pl-negative {
+      color: var(--danger);
+    }
+
+    .portfolio-error {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--warning);
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 12px;
+    }
+
+    .portfolio-loading {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .portfolio-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -489,6 +632,7 @@
     <header>
       <div class="title-row">
         <div class="brand">
+          <img src="cerebro-brain.jpg" alt="Cerebro">
           <h1>Cerebro</h1>
           <span>Unified command deck</span>
         </div>
@@ -574,7 +718,87 @@
           <div class="placeholder">Research insights coming soon.</div>
         </div>
         <div class="subtab-panel" id="subtab-inv-portfolio" style="display:none;">
-          <div class="placeholder">Portfolio snapshot loading later.</div>
+          <div class="portfolio-dashboard">
+            <section class="portfolio-summary">
+              <div class="summary-card">
+                <p class="summary-label">Total Value</p>
+                <p id="portfolioTotalValue" class="summary-value">$0.00</p>
+              </div>
+              <div class="summary-card">
+                <p class="summary-label">Unrealized P/L</p>
+                <p id="portfolioTotalPL" class="summary-value">$0.00</p>
+              </div>
+              <div class="summary-card">
+                <p class="summary-label">Accounts</p>
+                <p id="portfolioAccountCount" class="summary-value">0</p>
+              </div>
+              <div class="summary-card">
+                <p class="summary-label">Positions</p>
+                <p id="portfolioPositionCount" class="summary-value">0</p>
+              </div>
+            </section>
+
+            <section class="portfolio-grid">
+              <div class="panel">
+                <div class="panel-header">
+                  <h3>Asset Allocation</h3>
+                  <span class="panel-subtitle">by asset type</span>
+                </div>
+                <div class="chart-container">
+                  <canvas id="portfolioAllocationChart"></canvas>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <h3>Account Breakdown</h3>
+                  <span class="panel-subtitle">market value</span>
+                </div>
+                <div class="table-container">
+                  <table class="portfolio-table">
+                    <thead>
+                      <tr>
+                        <th>Account</th>
+                        <th>Brokerage</th>
+                        <th class="text-right">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody id="portfolioAccountTable"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Positions</h3>
+                <span class="panel-subtitle">latest prices</span>
+              </div>
+              <div class="table-container">
+                <table class="portfolio-table">
+                  <thead>
+                    <tr>
+                      <th>Symbol</th>
+                      <th>Asset</th>
+                      <th class="text-right">Qty</th>
+                      <th class="text-right">Price</th>
+                      <th class="text-right">Market Value</th>
+                      <th class="text-right">Unrealized P/L</th>
+                    </tr>
+                  </thead>
+                  <tbody id="portfolioPositionsTable"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <div id="portfolioError" class="portfolio-error" style="display:none;">
+              <p>⚠️ Unable to load portfolio data. Make sure the portfolio tracker is running on port 8000.</p>
+            </div>
+
+            <div id="portfolioLoading" class="portfolio-loading">
+              <p>⏳ Loading portfolio data...</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -845,11 +1069,15 @@
         const total = session.totalTokens || 0;
         const context = session.contextTokens || 0;
         const percent = context ? Math.min(100, Math.round((total / context) * 100)) : 0;
+        const model = session?.metadata?.model || session?.model || 'unknown';
         return `
           <div class="session-card">
             <div class="session-row">
               <div class="session-key">${esc(session.key)}</div>
               <div class="session-time">${timeAgo(session.updatedAt)}</div>
+            </div>
+            <div class="session-row">
+              <div class="session-model">${esc(model)}</div>
             </div>
             <div class="progress">
               <div class="progress-bar" style="width:${percent}%"></div>
@@ -1061,6 +1289,193 @@
     setInterval(loadAgents, 8000);
     setInterval(loadSessions, 12000);
     setInterval(loadCron, 20000);
+
+    // Portfolio Dashboard Functions
+    const PORTFOLIO_API = {
+      accounts: '/api/portfolio/accounts',
+      positions: '/api/portfolio/positions'
+    };
+
+    const currencyFormatter = new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD' 
+    });
+
+    let portfolioChart = null;
+
+    async function loadPortfolio() {
+      const loadingEl = document.getElementById('portfolioLoading');
+      const errorEl = document.getElementById('portfolioError');
+      
+      try {
+        loadingEl.style.display = 'block';
+        errorEl.style.display = 'none';
+
+        const [accountsRes, positionsRes] = await Promise.all([
+          fetch(PORTFOLIO_API.accounts),
+          fetch(PORTFOLIO_API.positions)
+        ]);
+
+        if (!accountsRes.ok || !positionsRes.ok) {
+          throw new Error('Failed to fetch portfolio data');
+        }
+
+        const accounts = await accountsRes.json();
+        const positions = await positionsRes.json();
+
+        renderPortfolioSummary(accounts, positions);
+        renderPortfolioAccounts(accounts, positions);
+        renderPortfolioPositions(positions);
+        renderPortfolioAllocation(positions);
+
+        loadingEl.style.display = 'none';
+      } catch (err) {
+        console.error('Portfolio error:', err);
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+      }
+    }
+
+    function renderPortfolioSummary(accounts, positions) {
+      const totalValue = positions.reduce((sum, p) => sum + (p.market_value || 0), 0);
+      const totalPL = positions.reduce((sum, p) => sum + (p.unrealized_pl || 0), 0);
+      
+      document.getElementById('portfolioTotalValue').textContent = currencyFormatter.format(totalValue);
+      
+      const plEl = document.getElementById('portfolioTotalPL');
+      plEl.textContent = currencyFormatter.format(totalPL);
+      plEl.className = 'summary-value ' + (totalPL >= 0 ? 'pl-positive' : 'pl-negative');
+      
+      document.getElementById('portfolioAccountCount').textContent = accounts.length;
+      document.getElementById('portfolioPositionCount').textContent = positions.length;
+    }
+
+    function renderPortfolioAccounts(accounts, positions) {
+      const tbody = document.getElementById('portfolioAccountTable');
+      tbody.innerHTML = '';
+
+      const accountValues = {};
+      positions.forEach(p => {
+        accountValues[p.account_id] = (accountValues[p.account_id] || 0) + (p.market_value || 0);
+      });
+
+      accounts.forEach(account => {
+        const value = accountValues[account.id] || 0;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${esc(account.account_name || account.account_number || 'Account ' + account.id)}</td>
+          <td>${esc(account.brokerage)}</td>
+          <td class="text-right">${currencyFormatter.format(value)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderPortfolioPositions(positions) {
+      const tbody = document.getElementById('portfolioPositionsTable');
+      tbody.innerHTML = '';
+
+      positions.forEach(position => {
+        const pl = position.unrealized_pl || 0;
+        const plClass = pl >= 0 ? 'pl-positive' : 'pl-negative';
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${esc(position.symbol)}</strong></td>
+          <td>${esc(position.asset_type || '-')}</td>
+          <td class="text-right">${(position.quantity || 0).toFixed(2)}</td>
+          <td class="text-right">${currencyFormatter.format(position.price || 0)}</td>
+          <td class="text-right">${currencyFormatter.format(position.market_value || 0)}</td>
+          <td class="text-right ${plClass}">${currencyFormatter.format(pl)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderPortfolioAllocation(positions) {
+      const allocation = {};
+      positions.forEach(p => {
+        const type = p.asset_type || 'Other';
+        allocation[type] = (allocation[type] || 0) + (p.market_value || 0);
+      });
+
+      const labels = Object.keys(allocation);
+      const data = Object.values(allocation);
+      const colors = [
+        '#8b5cf6', // accent purple
+        '#22d3ee', // accent-2 cyan
+        '#10b981', // success green
+        '#f59e0b', // warning orange
+        '#ef4444', // danger red
+        '#6366f1'  // indigo
+      ];
+
+      const ctx = document.getElementById('portfolioAllocationChart');
+      
+      if (portfolioChart) {
+        portfolioChart.destroy();
+      }
+
+      portfolioChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors,
+            borderColor: '#111827',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#e5e7eb',
+                padding: 12,
+                font: { size: 12 }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#1f2937',
+              titleColor: '#e5e7eb',
+              bodyColor: '#e5e7eb',
+              borderColor: '#374151',
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = currencyFormatter.format(context.parsed);
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((context.parsed / total) * 100).toFixed(1);
+                  return ` ${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Load portfolio when investment tab is clicked
+    const investmentTab = document.querySelector('[data-tab="investment"]');
+    if (investmentTab) {
+      investmentTab.addEventListener('click', () => {
+        setTimeout(loadPortfolio, 100);
+      });
+    }
+
+    // Also load when portfolio subtab is clicked
+    const portfolioSubtab = document.querySelector('[data-subtab="inv-portfolio"]');
+    if (portfolioSubtab) {
+      portfolioSubtab.addEventListener('click', () => {
+        setTimeout(loadPortfolio, 100);
+      });
+    }
   </script>
 </body>
 </html>
