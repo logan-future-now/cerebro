@@ -254,6 +254,186 @@
     .cron-row span { font-size: 12px; color: var(--muted); }
     .cron-name { font-weight: 600; color: var(--text); }
 
+    /* Health Monitoring Styles */
+    .health-overview {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .health-stat {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 16px;
+      background: var(--panel-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .health-stat-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .health-stat-dot.healthy { background: #10b981; }
+    .health-stat-dot.degraded { background: #f59e0b; }
+    .health-stat-dot.unhealthy { background: #ef4444; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .health-stat-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .health-stat-count {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .health-stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .health-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .health-card {
+      background: var(--panel-elev);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.2s ease;
+    }
+
+    .health-card:hover {
+      border-color: var(--accent-2);
+    }
+
+    .health-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .health-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .health-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .health-status-dot.healthy { background: #10b981; }
+    .health-status-dot.degraded { background: #f59e0b; }
+    .health-status-dot.unhealthy { background: #ef4444; }
+    .health-status-dot.unreachable { background: #6b7280; }
+    .health-status-dot.unknown { background: #6b7280; opacity: 0.5; }
+
+    .health-card-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .health-card-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .health-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .health-meta-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .health-meta-value {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .health-meta-value.healthy { color: #10b981; }
+    .health-meta-value.degraded { color: #f59e0b; }
+    .health-meta-value.unhealthy { color: #ef4444; }
+    .health-meta-value.unreachable { color: #6b7280; }
+
+    .health-error {
+      font-size: 11px;
+      color: #ef4444;
+      padding: 8px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 6px;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .health-chart-container {
+      height: 80px;
+      position: relative;
+    }
+
+    .health-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .health-btn {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .health-btn:hover {
+      border-color: var(--accent-2);
+      background: var(--panel-elev);
+    }
+
+    .health-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .placeholder {
       text-align: center;
       padding: 60px 20px;
@@ -347,8 +527,26 @@
     .task:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .task.dragging { opacity: 0.5; cursor: grabbing; }
 
-    .task-title { font-weight: 500; margin-bottom: 4px; }
-    .task-desc { font-size: 12px; color: #aaa; white-space: pre-wrap; }
+    .task-title { font-weight: 500; margin-bottom: 4px; cursor: pointer; }
+    .task-title:hover { text-decoration: underline; }
+    .task-desc { 
+      font-size: 12px; 
+      color: #aaa; 
+      white-space: pre-wrap;
+      max-height: 3.6em;
+      line-height: 1.2em;
+      overflow: hidden;
+      position: relative;
+    }
+    .task-desc::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 100%;
+      height: 1.2em;
+      background: linear-gradient(to bottom, transparent, #0f3460);
+    }
     .task-meta { font-size: 11px; color: #666; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
 
     .priority-pill {
@@ -459,6 +657,60 @@
     .btn-secondary { background: #0f3460; color: #aaa; }
     .btn-danger { background: #dc2626; color: #fff; }
 
+    /* Detail modal styles */
+    .modal-detail { max-width: 680px; max-height: 85vh; overflow-y: auto; }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #1a1a2e;
+      padding-bottom: 12px;
+    }
+    .btn-icon {
+      background: transparent;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+    }
+    .btn-icon:hover { color: #e0e0e0; }
+    .detail-body { display: flex; flex-direction: column; gap: 16px; }
+    .detail-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .detail-section label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .detail-section p { color: #e0e0e0; font-size: 14px; margin: 0; }
+    .detail-mono { font-family: monospace; font-size: 12px; color: #8b5cf6; }
+    .detail-markdown {
+      background: #0a0a1a;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #1a1a2e;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e0e0e0;
+    }
+    .detail-checklist { list-style: none; padding: 0; margin: 0; }
+    .detail-checklist li {
+      padding: 8px 12px;
+      background: #0a0a1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .detail-checklist li::before { content: '☐ '; color: #666; }
+    .detail-checklist li.checked::before { content: '☑ '; color: #22c55e; }
+    .detail-checklist li.checked { text-decoration: line-through; color: #666; }
+
     .sync-status { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #666; }
 
     .todo-grid {
@@ -497,6 +749,8 @@
       header { padding: 18px 20px 10px; }
       .cron-row { grid-template-columns: 1fr; }
       .title-row { flex-direction: column; align-items: flex-start; }
+      .modal-detail { max-width: none; padding: 16px; }
+      .detail-meta-grid { grid-template-columns: 1fr; }
     }
 
     /* Portfolio Dashboard Styles */
@@ -653,6 +907,7 @@
           <button class="subtab-btn active" data-subtab="sessions">Sessions</button>
           <button class="subtab-btn" data-subtab="agents">Agents</button>
           <button class="subtab-btn" data-subtab="cron">Cron Jobs</button>
+          <button class="subtab-btn" data-subtab="health">Health</button>
         </div>
 
         <div class="subtab-panel" id="subtab-sessions">
@@ -673,6 +928,14 @@
           <div class="panel">
             <h3>Cron Jobs</h3>
             <div class="cron-table" id="cron-list"></div>
+          </div>
+        </div>
+
+        <div class="subtab-panel" id="subtab-health" style="display:none;">
+          <div class="panel">
+            <h3>Service Health</h3>
+            <div id="health-overview" class="health-overview"></div>
+            <div id="health-cards" class="health-cards-grid"></div>
           </div>
         </div>
       </section>
@@ -719,6 +982,15 @@
         </div>
         <div class="subtab-panel" id="subtab-inv-portfolio" style="display:none;">
           <div class="portfolio-dashboard">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:12px;gap:8px;">
+              <span id="portfolioAuthStatus" style="font-size:12px;color:var(--text-secondary);align-self:center;"></span>
+              <button id="syncETradeBtn" class="btn-primary" onclick="openETradeOAuthModal()" style="font-size:13px;padding:6px 14px;">
+                🔗 Connect E*Trade
+              </button>
+              <button id="logoutETradeBtn" class="btn-danger" onclick="logoutETrade()" style="font-size:13px;padding:6px 14px;display:none;">
+                Disconnect
+              </button>
+            </div>
             <section class="portfolio-summary">
               <div class="summary-card">
                 <p class="summary-label">Total Value</p>
@@ -836,6 +1108,91 @@
     </div>
   </div>
 
+  <div class="modal" id="task-detail-modal">
+    <div class="modal-content modal-detail">
+      <div class="detail-header">
+        <h2 id="detail-title"></h2>
+        <button class="btn-icon" onclick="closeTaskDetail()">✕</button>
+      </div>
+      <div class="detail-body">
+        <div class="detail-meta-grid">
+          <div class="detail-section">
+            <label>Project</label>
+            <p id="detail-project"></p>
+          </div>
+          <div class="detail-section">
+            <label>Status</label>
+            <p id="detail-column"></p>
+          </div>
+          <div class="detail-section">
+            <label>Priority</label>
+            <p id="detail-priority"></p>
+          </div>
+          <div class="detail-section">
+            <label>Created</label>
+            <p id="detail-created"></p>
+          </div>
+          <div class="detail-section" id="detail-workdir-section" style="display:none">
+            <label>Work Directory</label>
+            <p id="detail-workdir" class="detail-mono"></p>
+          </div>
+          <div class="detail-section" id="detail-category-section" style="display:none">
+            <label>Category</label>
+            <p id="detail-category"></p>
+          </div>
+        </div>
+        <div class="detail-section" id="detail-checklist-section" style="display:none">
+          <label>Checklist</label>
+          <ul id="detail-checklist" class="detail-checklist"></ul>
+        </div>
+        <div class="detail-section">
+          <label>Description</label>
+          <div id="detail-desc" class="detail-markdown"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeTaskDetail()">Close</button>
+        <button class="btn-primary" onclick="editTaskFromDetail()">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- E*Trade OAuth Modal -->
+  <div class="modal" id="etrade-oauth-modal">
+    <div class="modal-content" style="max-width:420px;">
+      <h2>E*Trade Authorization</h2>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Connect your E*Trade account to sync positions and balances.</p>
+
+      <div id="etrade-step1" style="margin-bottom:16px;">
+        <p style="font-size:13px;font-weight:600;margin-bottom:6px;">Step 1: Open E*Trade Login</p>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Click below to open the E*Trade authorization page in a new window.</p>
+        <button id="etrade-open-auth-btn" class="btn-primary" onclick="openETradeAuthWindow()" disabled style="width:100%;padding:8px;">
+          Open E*Trade Authorization
+        </button>
+        <p id="etrade-auth-url-status" style="font-size:11px;color:var(--text-secondary);margin-top:6px;">Initializing...</p>
+      </div>
+
+      <hr style="border-color:var(--border);margin-bottom:16px;">
+
+      <div id="etrade-step2" style="margin-bottom:16px;">
+        <p style="font-size:13px;font-weight:600;margin-bottom:6px;">Step 2: Enter Verification Code</p>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">After you authorize, E*Trade will show a code. Paste it here:</p>
+        <input id="etrade-verifier-input" type="text" placeholder="Verification code" maxlength="10"
+               style="width:100%;text-align:center;font-family:monospace;font-size:18px;padding:8px;margin-bottom:8px;">
+        <button id="etrade-submit-btn" class="btn-primary" onclick="submitETradeVerifier()" style="width:100%;padding:8px;">
+          Verify Code
+        </button>
+      </div>
+
+      <div id="etrade-status-msg" style="display:none;font-size:13px;padding:8px;border-radius:6px;margin-bottom:12px;"></div>
+      <div id="etrade-error-msg" style="display:none;font-size:13px;padding:8px;border-radius:6px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;margin-bottom:12px;"></div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeETradeOAuthModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = '/api/tasks';
     const AGENTS_API = '/api/agents';
@@ -865,10 +1222,19 @@
 
     function switchSubtab(btn) {
       const parent = btn.closest('.tab-panel');
+      const subtab = btn.dataset.subtab;
+      
       parent.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b === btn));
       parent.querySelectorAll('.subtab-panel').forEach(panel => {
-        panel.style.display = panel.id === `subtab-${btn.dataset.subtab}` ? 'block' : 'none';
+        panel.style.display = panel.id === `subtab-${subtab}` ? 'block' : 'none';
       });
+
+      // Start/stop health polling based on active subtab
+      if (subtab === 'health') {
+        startHealthPolling();
+      } else {
+        stopHealthPolling();
+      }
     }
 
     async function loadTasks() {
@@ -979,15 +1345,15 @@
                       ${colTasks.map(t => `
                         <div class="task priority-${t.priority} ${t.trashed ? 'trashed' : ''}" draggable="true" data-id="${t.id}"
                              ondragstart="dragStart(event)" ondragend="dragEnd(event)">
-                          <div class="task-title">${esc(t.title)}</div>
+                          <div class="task-title" onclick="event.stopPropagation(); openTaskDetail('${t.id}')">${esc(t.title)}</div>
                           ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ''}
                           <div class="task-meta">
                             <span>${new Date(t.created).toLocaleDateString()}</span>
                             <span class="priority-pill ${t.priority}">${t.priority}</span>
                             <span class="task-actions">
-                              <button onclick="editTask('${t.id}')">✏️</button>
-                              ${col === 'Done' && !t.trashed ? `<button class="danger" onclick="trashTask('${t.id}', '${col}')">🗑️</button>` : ''}
-                              ${t.trashed && showTrash ? `<button onclick="restoreTask('${t.id}', '${t.trashedFrom || col}')">♻️</button>` : ''}
+                              <button onclick="event.stopPropagation(); editTask('${t.id}')">✏️</button>
+                              ${col === 'Done' && !t.trashed ? `<button class="danger" onclick="event.stopPropagation(); trashTask('${t.id}', '${col}')">🗑️</button>` : ''}
+                              ${t.trashed && showTrash ? `<button onclick="event.stopPropagation(); restoreTask('${t.id}', '${t.trashedFrom || col}')">♻️</button>` : ''}
                             </span>
                           </div>
                         </div>
@@ -1128,6 +1494,209 @@
       }).join('');
     }
 
+    // Health Monitoring
+    let healthPollInterval = null;
+    let healthCharts = {};
+
+    async function loadHealth() {
+      try {
+        const res = await fetch('/api/health/services');
+        if (!res.ok) throw new Error('Failed to load health data');
+        const data = await res.json();
+        renderHealth(data.services || []);
+      } catch (e) {
+        console.error('Failed to load health:', e);
+        document.getElementById('health-cards').innerHTML = `<div class="agent-empty">Health data unavailable</div>`;
+      }
+    }
+
+    async function checkService(serviceId) {
+      try {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Checking...';
+        
+        const res = await fetch(`/api/health/services/${serviceId}/check`, { method: 'POST' });
+        if (!res.ok) throw new Error('Check failed');
+        
+        // Reload health data
+        await loadHealth();
+      } catch (e) {
+        console.error('Failed to check service:', e);
+      }
+    }
+
+    function renderHealth(services) {
+      const overview = document.getElementById('health-overview');
+      const cardsContainer = document.getElementById('health-cards');
+      
+      if (!services.length) {
+        cardsContainer.innerHTML = `<div class="agent-empty">No services configured</div>`;
+        overview.innerHTML = '';
+        return;
+      }
+
+      // Calculate overview stats
+      const healthy = services.filter(s => s.status === 'healthy').length;
+      const degraded = services.filter(s => s.status === 'degraded').length;
+      const unhealthy = services.filter(s => s.status === 'unhealthy' || s.status === 'unreachable').length;
+
+      // Render overview
+      overview.innerHTML = `
+        <div class="health-stat">
+          <div class="health-stat-dot healthy"></div>
+          <div class="health-stat-text">
+            <div class="health-stat-count">${healthy}</div>
+            <div class="health-stat-label">Healthy</div>
+          </div>
+        </div>
+        <div class="health-stat">
+          <div class="health-stat-dot degraded"></div>
+          <div class="health-stat-text">
+            <div class="health-stat-count">${degraded}</div>
+            <div class="health-stat-label">Degraded</div>
+          </div>
+        </div>
+        <div class="health-stat">
+          <div class="health-stat-dot unhealthy"></div>
+          <div class="health-stat-text">
+            <div class="health-stat-count">${unhealthy}</div>
+            <div class="health-stat-label">Down</div>
+          </div>
+        </div>
+      `;
+
+      // Render service cards
+      cardsContainer.innerHTML = services.map(service => {
+        const statusClass = service.status || 'unknown';
+        const statusText = service.status || 'Unknown';
+        const responseTime = service.response_time_ms !== null ? `${service.response_time_ms}ms` : '—';
+        const lastChecked = service.checked_at ? timeAgo(service.checked_at) : 'Never';
+        const hasError = service.error_message && service.status !== 'healthy';
+
+        return `
+          <div class="health-card">
+            <div class="health-card-header">
+              <div class="health-card-title">
+                <div class="health-status-dot ${statusClass}"></div>
+                <div class="health-card-name">${esc(service.name)}</div>
+              </div>
+            </div>
+            <div class="health-card-meta">
+              <div class="health-meta-item">
+                <div class="health-meta-label">Status</div>
+                <div class="health-meta-value ${statusClass}">${statusText}</div>
+              </div>
+              <div class="health-meta-item">
+                <div class="health-meta-label">Response</div>
+                <div class="health-meta-value">${responseTime}</div>
+              </div>
+              <div class="health-meta-item">
+                <div class="health-meta-label">Endpoint</div>
+                <div class="health-meta-value">${esc(service.host)}:${service.port}</div>
+              </div>
+              <div class="health-meta-item">
+                <div class="health-meta-label">Last Check</div>
+                <div class="health-meta-value">${lastChecked}</div>
+              </div>
+            </div>
+            ${hasError ? `<div class="health-error">${esc(service.error_message)}</div>` : ''}
+            <div class="health-chart-container" id="chart-${service.service_id}">
+              <canvas id="canvas-${service.service_id}"></canvas>
+            </div>
+            <div class="health-actions">
+              <button class="health-btn" onclick="checkService('${service.service_id}')">Check Now</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Render sparkline charts
+      services.forEach(service => {
+        renderHealthChart(service.service_id);
+      });
+    }
+
+    async function renderHealthChart(serviceId) {
+      try {
+        const res = await fetch(`/api/health/services/${serviceId}/history?hours=1`);
+        if (!res.ok) return;
+        
+        const data = await res.json();
+        const history = data.history || [];
+        
+        if (history.length === 0) return;
+
+        const canvas = document.getElementById(`canvas-${serviceId}`);
+        if (!canvas) return;
+
+        // Destroy existing chart
+        if (healthCharts[serviceId]) {
+          healthCharts[serviceId].destroy();
+        }
+
+        const ctx = canvas.getContext('2d');
+        const times = history.map(h => new Date(h.checked_at));
+        const responseTimes = history.map(h => h.response_time_ms || 0);
+
+        healthCharts[serviceId] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: times,
+            datasets: [{
+              data: responseTimes,
+              borderColor: '#22d3ee',
+              backgroundColor: 'rgba(34, 211, 238, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                  label: (context) => `${context.parsed.y}ms`
+                }
+              }
+            },
+            scales: {
+              x: {
+                display: false
+              },
+              y: {
+                display: false,
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Failed to render health chart:', e);
+      }
+    }
+
+    function startHealthPolling() {
+      if (healthPollInterval) return; // Already polling
+      
+      loadHealth(); // Load immediately
+      healthPollInterval = setInterval(loadHealth, 30000); // Poll every 30s
+    }
+
+    function stopHealthPolling() {
+      if (healthPollInterval) {
+        clearInterval(healthPollInterval);
+        healthPollInterval = null;
+      }
+    }
+
     function renderTodos(todoTasks) {
       const grid = document.getElementById('todo-grid');
       if (!todoTasks.length) {
@@ -1181,6 +1750,71 @@
 
     function closeCronModal() {
       document.getElementById('cron-modal').classList.remove('active');
+    }
+
+    let currentDetailTaskId = null;
+
+    function openTaskDetail(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      // Close other modals first to prevent stacking
+      closeModal();
+      closeCronModal();
+
+      document.getElementById('detail-title').textContent = task.title;
+      document.getElementById('detail-project').textContent = task.project || DEFAULT_PROJECT;
+      document.getElementById('detail-column').textContent = task.column || 'Backlog';
+      
+      // Priority with sanitized mapping
+      const priorityMap = { high: 'high', medium: 'medium', low: 'low' };
+      const safePriority = priorityMap[task.priority] || 'medium';
+      document.getElementById('detail-priority').innerHTML =
+        `<span class="priority-pill ${safePriority}">${safePriority}</span>`;
+      
+      document.getElementById('detail-created').textContent =
+        new Date(task.created).toLocaleString();
+      document.getElementById('detail-desc').textContent =
+        task.desc || 'No description provided.';
+
+      // Optional fields
+      toggleDetailField('detail-workdir-section', 'detail-workdir', task.workDir);
+      toggleDetailField('detail-category-section', 'detail-category', task.category);
+
+      // Checklist
+      if (task.checklist && task.checklist.length) {
+        document.getElementById('detail-checklist').innerHTML = task.checklist.map(item =>
+          `<li class="${item.checked ? 'checked' : ''}">${esc(item.text)}</li>`
+        ).join('');
+        document.getElementById('detail-checklist-section').style.display = 'block';
+      } else {
+        document.getElementById('detail-checklist-section').style.display = 'none';
+      }
+
+      currentDetailTaskId = id;
+      document.getElementById('task-detail-modal').classList.add('active');
+    }
+
+    function toggleDetailField(sectionId, fieldId, value) {
+      if (value) {
+        document.getElementById(fieldId).textContent = value;
+        document.getElementById(sectionId).style.display = 'block';
+      } else {
+        document.getElementById(sectionId).style.display = 'none';
+      }
+    }
+
+    function closeTaskDetail() {
+      document.getElementById('task-detail-modal').classList.remove('active');
+      currentDetailTaskId = null;
+    }
+
+    function editTaskFromDetail() {
+      if (currentDetailTaskId) {
+        const id = currentDetailTaskId;
+        closeTaskDetail();
+        openModal(id);
+      }
     }
 
     function openModal(id = null, project = DEFAULT_PROJECT) {
@@ -1276,6 +1910,7 @@
       if (e.key === 'Escape') {
         closeModal();
         closeCronModal();
+        closeTaskDetail();
       }
     });
 
@@ -1293,7 +1928,12 @@
     // Portfolio Dashboard Functions
     const PORTFOLIO_API = {
       accounts: '/api/portfolio/accounts',
-      positions: '/api/portfolio/positions'
+      positions: '/api/portfolio/positions',
+      authInit: '/api/portfolio/etrade/auth/init',
+      authVerify: '/api/portfolio/etrade/auth/verify',
+      authStatus: '/api/portfolio/etrade/status',
+      sync: '/api/portfolio/etrade/sync',
+      authLogout: '/api/portfolio/etrade/auth/logout'
     };
 
     const currencyFormatter = new Intl.NumberFormat('en-US', { 
@@ -1461,6 +2101,159 @@
       });
     }
 
+    // E*Trade OAuth Functions
+    let etradeSessionId = null;
+    let etradeAuthUrl = null;
+    let etradeAuthTimer = null;
+
+    async function openETradeOAuthModal() {
+      etradeSessionId = null;
+      etradeAuthUrl = null;
+      document.getElementById('etrade-verifier-input').value = '';
+      document.getElementById('etrade-status-msg').style.display = 'none';
+      document.getElementById('etrade-error-msg').style.display = 'none';
+      document.getElementById('etrade-open-auth-btn').disabled = true;
+      document.getElementById('etrade-auth-url-status').textContent = 'Initializing...';
+      document.getElementById('etrade-oauth-modal').style.display = 'flex';
+
+      try {
+        const res = await fetch(PORTFOLIO_API.authInit);
+        if (!res.ok) throw new Error('Failed to initialize OAuth');
+        const data = await res.json();
+        etradeSessionId = data.session_id;
+        etradeAuthUrl = data.authorization_url;
+        document.getElementById('etrade-open-auth-btn').disabled = false;
+        document.getElementById('etrade-auth-url-status').textContent = 'Ready — click the button above to continue.';
+        etradeAuthTimer = setTimeout(() => {
+          if (etradeSessionId) {
+            showETradeError('Session expired. Please close and try again.');
+            etradeSessionId = null;
+          }
+        }, 10 * 60 * 1000);
+      } catch (err) {
+        showETradeError('Failed to initialize: ' + err.message);
+      }
+    }
+
+    function closeETradeOAuthModal() {
+      document.getElementById('etrade-oauth-modal').style.display = 'none';
+      etradeSessionId = null;
+      if (etradeAuthTimer) clearTimeout(etradeAuthTimer);
+    }
+
+    function openETradeAuthWindow() {
+      if (!etradeAuthUrl) {
+        showETradeError('Authorization URL not available. Close and try again.');
+        return;
+      }
+      window.open(etradeAuthUrl, 'etradeauth', 'width=600,height=700');
+      showETradeStatus('E*Trade window opened. Log in and authorize, then paste the code below.', 'info');
+    }
+
+    async function submitETradeVerifier() {
+      const code = document.getElementById('etrade-verifier-input').value.trim();
+      if (!code) { showETradeError('Please enter the verification code.'); return; }
+      if (!etradeSessionId) { showETradeError('Session expired. Close and try again.'); return; }
+
+      document.getElementById('etrade-submit-btn').disabled = true;
+      showETradeStatus('Verifying...', 'info');
+
+      try {
+        const res = await fetch(PORTFOLIO_API.authVerify, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ verifier: code, session_id: etradeSessionId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Verification failed');
+
+        showETradeStatus('✓ Authenticated! Syncing positions...', 'success');
+
+        // Trigger sync
+        try {
+          await fetch(PORTFOLIO_API.sync, { method: 'POST' });
+        } catch (e) { /* sync error is non-fatal */ }
+
+        setTimeout(() => {
+          closeETradeOAuthModal();
+          loadPortfolio();
+          checkETradeAuthStatus();
+        }, 1500);
+      } catch (err) {
+        showETradeError(err.message);
+      } finally {
+        document.getElementById('etrade-submit-btn').disabled = false;
+      }
+    }
+
+    function showETradeStatus(msg, type) {
+      const el = document.getElementById('etrade-status-msg');
+      el.style.display = 'block';
+      el.style.background = type === 'success' ? '#f0fdf4' : '#eff6ff';
+      el.style.border = '1px solid ' + (type === 'success' ? '#bbf7d0' : '#bfdbfe');
+      el.style.color = type === 'success' ? '#166534' : '#1e40af';
+      el.textContent = msg;
+      document.getElementById('etrade-error-msg').style.display = 'none';
+    }
+
+    function showETradeError(msg) {
+      const el = document.getElementById('etrade-error-msg');
+      el.style.display = 'block';
+      el.textContent = msg;
+      document.getElementById('etrade-status-msg').style.display = 'none';
+    }
+
+    async function checkETradeAuthStatus() {
+      try {
+        const res = await fetch(PORTFOLIO_API.authStatus);
+        if (!res.ok) return;
+        const data = await res.json();
+        const statusEl = document.getElementById('portfolioAuthStatus');
+        const btn = document.getElementById('syncETradeBtn');
+        const logoutBtn = document.getElementById('logoutETradeBtn');
+        if (data.authenticated) {
+          statusEl.textContent = '✅ Connected (expires midnight ET)';
+          statusEl.style.color = '#16a34a';
+          btn.textContent = '🔄 Re-sync E*Trade';
+          btn.onclick = async () => {
+            btn.disabled = true;
+            btn.textContent = '⏳ Syncing...';
+            try {
+              await fetch(PORTFOLIO_API.sync, { method: 'POST' });
+              await loadPortfolio();
+            } catch (e) { /* ignore */ }
+            btn.disabled = false;
+            btn.textContent = '🔄 Re-sync E*Trade';
+          };
+          logoutBtn.style.display = 'inline-block';
+        } else {
+          statusEl.textContent = '⚠️ Not connected';
+          statusEl.style.color = '#d97706';
+          btn.textContent = '🔗 Connect E*Trade';
+          btn.onclick = openETradeOAuthModal;
+          logoutBtn.style.display = 'none';
+        }
+      } catch (e) {
+        // portfolio tracker not running
+        document.getElementById('portfolioAuthStatus').textContent = '';
+      }
+    }
+
+    async function logoutETrade() {
+      const btn = document.getElementById('logoutETradeBtn');
+      btn.disabled = true;
+      btn.textContent = 'Disconnecting...';
+      try {
+        await fetch(PORTFOLIO_API.authLogout, { method: 'POST' });
+        await checkETradeAuthStatus();
+        await loadPortfolio();
+      } catch (e) {
+        console.error('Logout failed:', e);
+      }
+      btn.disabled = false;
+      btn.textContent = 'Disconnect';
+    }
+
     // Load portfolio when investment tab is clicked
     const investmentTab = document.querySelector('[data-tab="investment"]');
     if (investmentTab) {
@@ -1474,8 +2267,12 @@
     if (portfolioSubtab) {
       portfolioSubtab.addEventListener('click', () => {
         setTimeout(loadPortfolio, 100);
+        checkETradeAuthStatus();
       });
     }
+
+    // Check auth status on page load
+    checkETradeAuthStatus();
   </script>
 </body>
 </html>

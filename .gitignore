@@ -1,0 +1,7 @@
+node_modules/
+*.log
+*.bak
+*.bak.*
+*.backup.*
+*.pre-sqlite.*
+tasks.json.bak
