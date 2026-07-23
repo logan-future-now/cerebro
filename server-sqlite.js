@@ -670,6 +670,73 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ===== Reports API =====
+  // GET /api/reports — returns today's reports + past reports grouped by company
+  if (url.pathname === '/api/reports' && req.method === 'GET') {
+    try {
+      const REPORTS_DIR = path.join(__dirname, 'reports');
+      const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local tz
+
+      function getReportMeta(filename) {
+        const match = filename.match(/^(\d{4}-\d{2}-\d{2})-([a-z]+)-report\.md$/);
+        if (!match) return null;
+        return { date: match[1], company: match[2], filename };
+      }
+
+      let allFiles = [];
+      try {
+        allFiles = fs.readdirSync(REPORTS_DIR).filter(f => f.endsWith('.md'));
+      } catch (e) {
+        // reports dir might not exist yet
+      }
+
+      const reports = allFiles
+        .map(getReportMeta)
+        .filter(Boolean)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      const todayReports = reports.filter(r => r.date === today);
+      const pastByCompany = {};
+      for (const r of reports) {
+        if (r.date === today) continue;
+        if (!pastByCompany[r.company]) pastByCompany[r.company] = [];
+        pastByCompany[r.company].push(r);
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({
+        today: todayReports,
+        past: pastByCompany,
+        total: reports.length
+      }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  // GET /api/reports/content?file=YYYY-MM-DD-company-report.md — returns raw markdown
+  if (url.pathname === '/api/reports/content' && req.method === 'GET') {
+    try {
+      const file = url.searchParams.get('file');
+      if (!file || !/^[\w.-]+\.md$/.test(file)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Invalid file parameter' }));
+      }
+      const filePath = path.join(__dirname, 'reports', file);
+      if (!filePath.startsWith(path.join(__dirname, 'reports'))) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Forbidden' }));
+      }
+      const content = fs.readFileSync(filePath, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      return res.end(content);
+    } catch (err) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: 'Report not found' }));
+    }
+  }
+
   if (url.pathname === '/api/todos' && req.method === 'GET') {
     const todos = await getTodoTasks();
     res.writeHead(200, { 'Content-Type': 'application/json' });

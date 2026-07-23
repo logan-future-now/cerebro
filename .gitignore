@@ -11,3 +11,4 @@ tasks.json.bak
 tasks.db
 tasks.db-journal
 todo-list/tasks.db
+reports/
