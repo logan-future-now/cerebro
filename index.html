@@ -724,7 +724,13 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 12px;
+      transition: background 0.15s, border-color 0.15s;
     }
+    .todo-column.drag-over {
+      background: #1a2240;
+      border-color: var(--accent);
+    }
+    .todo-column h3 { margin: 0 0 10px; font-size: 13px; text-transform: capitalize; color: var(--muted); }
 
     .todo-item {
       background: var(--panel-elev);
@@ -734,9 +740,43 @@
       margin-bottom: 10px;
       font-size: 13px;
       color: var(--text);
+      cursor: grab;
+      position: relative;
     }
+    .todo-item.dragging { opacity: 0.4; }
 
     .todo-item small { display: block; color: var(--muted); margin-top: 6px; font-size: 11px; }
+
+    .todo-item-header { display: flex; align-items: flex-start; gap: 6px; }
+    .todo-item-title { flex: 1; line-height: 1.4; }
+    .todo-created { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+    .todo-priority {
+      display: inline-block; font-size: 10px; padding: 1px 6px;
+      border-radius: 4px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.03em; margin-bottom: 4px;
+    }
+    .todo-priority.urgent  { background: rgba(239,68,68,0.15); color: #f87171; }
+    .todo-priority.important { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .todo-priority.normal  { background: rgba(99,102,241,0.15); color: #818cf8; }
+    .todo-priority.low     { background: rgba(107,114,128,0.15); color: #9ca3af; }
+
+    .todo-delete-btn {
+      flex-shrink: 0; background: none; border: none; cursor: pointer;
+      color: #ef4444; font-size: 14px; line-height: 1; padding: 0 2px;
+      opacity: 0.5; transition: opacity 0.15s;
+    }
+    .todo-delete-btn:hover { opacity: 1; }
+
+    .todo-confirm { display: flex; gap: 6px; margin-top: 8px; }
+    .todo-confirm button {
+      flex: 1; padding: 4px 0; border-radius: 6px; border: none;
+      cursor: pointer; font-size: 12px; font-weight: 600;
+    }
+    .todo-confirm .btn-delete { background: #ef4444; color: #fff; }
+    .todo-confirm .btn-delete:hover { background: #dc2626; }
+    .todo-confirm .btn-cancel { background: #1f2a44; color: var(--muted); }
+    .todo-confirm .btn-cancel:hover { color: var(--text); }
 
     @media (max-width: 980px) {
       .board-layout { flex-direction: column; }
@@ -1014,7 +1054,7 @@
               <div class="panel">
                 <div class="panel-header">
                   <h3>Asset Allocation</h3>
-                  <span class="panel-subtitle">by asset type</span>
+                  <span class="panel-subtitle">by position</span>
                 </div>
                 <div class="chart-container">
                   <canvas id="portfolioAllocationChart"></canvas>
@@ -1048,18 +1088,19 @@
               </div>
               <div class="table-container">
                 <table class="portfolio-table">
-                  <thead>
-                    <tr>
-                      <th>Symbol</th>
-                      <th>Asset</th>
-                      <th class="text-right">Qty</th>
-                      <th class="text-right">Price</th>
-                      <th class="text-right">Market Value</th>
-                      <th class="text-right">Unrealized P/L</th>
-                    </tr>
-                  </thead>
-                  <tbody id="portfolioPositionsTable"></tbody>
-                </table>
+                    <thead>
+                      <tr>
+                        <th>Symbol</th>
+                        <th>Asset</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">Market Value</th>
+                        <th class="text-right">% Allocation</th>
+                        <th class="text-right">Unrealized P/L</th>
+                      </tr>
+                    </thead>
+                    <tbody id="portfolioPositionsTable"></tbody>
+                  </table>
               </div>
             </section>
 
@@ -1218,6 +1259,7 @@
       document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === `tab-${tab}`);
       });
+      if (tab === 'todo') loadTodos();
     }
 
     function switchSubtab(btn) {
@@ -1291,6 +1333,7 @@
         const data = await res.json();
         const tasks = Array.isArray(data.tasks) ? data.tasks : [];
         renderTodos(tasks);
+        fetch(TODOS_API + '/maintenance', { method: 'POST' }).catch(() => {});
       } catch (e) {
         document.getElementById('todo-grid').innerHTML = `<div class="agent-empty">Todo data unavailable</div>`;
       }
@@ -1697,6 +1740,10 @@
       }
     }
 
+    const TODO_STATUS_COLOR = { 'todo': '#6b7280', 'in-progress': '#22d3ee', 'blocked': '#f59e0b', 'done': '#10b981' };
+
+    let todoDragId = null;
+
     function renderTodos(todoTasks) {
       const grid = document.getElementById('todo-grid');
       if (!todoTasks.length) {
@@ -1709,19 +1756,80 @@
         if (!categories[cat]) categories[cat] = [];
         categories[cat].push(task);
       });
+
       grid.innerHTML = Object.entries(categories).map(([cat, items]) => {
-        return `
-          <div class="todo-column">
-            <h3>${esc(cat)}</h3>
-            ${items.map(item => `
-              <div class="todo-item">
-                ${esc(item.title)}
-                ${item.notes ? `<small>${esc(item.notes)}</small>` : ''}
+        const itemsHtml = items.map(item => {
+          const statusColor = TODO_STATUS_COLOR[item.status] || '#6b7280';
+          const priority = item.priority || 'normal';
+          const due = item.dueDate ? ` · due ${esc(item.dueDate)}` : '';
+          const created = item.created ? new Date(item.created).toLocaleDateString() : new Date().toLocaleDateString();
+          return `
+          <div class="todo-item" draggable="true" data-id="${esc(item.id)}">
+            <div class="todo-item-header">
+              <div class="todo-item-title">
+                <span class="todo-priority ${priority}">${priority}</span><br>
+                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${statusColor};margin-right:5px;vertical-align:middle"></span>${esc(item.title)}
               </div>
-            `).join('')}
-          </div>
-        `;
+              <button class="todo-delete-btn" title="Delete" onclick="todoDeleteClick(this, '${esc(item.id)}')">✕</button>
+            </div>
+            ${item.notes ? `<small>${esc(item.notes)}${due}</small>` : (item.dueDate ? `<small>${due.slice(3)}</small>` : '')}
+            <div class="todo-created">${created}</div>
+            <div class="todo-confirm" style="display:none">
+              <button class="btn-delete" onclick="todoConfirmDelete('${esc(item.id)}')">Delete</button>
+              <button class="btn-cancel" onclick="todoCancelDelete(this)">Cancel</button>
+            </div>
+          </div>`;
+        }).join('');
+        return `<div class="todo-column" data-cat="${esc(cat)}"><h3>${esc(cat)}</h3>${itemsHtml}</div>`;
       }).join('');
+
+      // Drag-and-drop wiring
+      grid.querySelectorAll('.todo-item').forEach(el => {
+        el.addEventListener('dragstart', e => {
+          todoDragId = el.dataset.id;
+          setTimeout(() => el.classList.add('dragging'), 0);
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        el.addEventListener('dragend', () => {
+          el.classList.remove('dragging');
+          todoDragId = null;
+        });
+      });
+
+      grid.querySelectorAll('.todo-column').forEach(col => {
+        col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+        col.addEventListener('dragleave', e => { if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over'); });
+        col.addEventListener('drop', async e => {
+          e.preventDefault();
+          col.classList.remove('drag-over');
+          const id = todoDragId;
+          const newCat = col.dataset.cat;
+          if (!id || !newCat) return;
+          await fetch(`${TODOS_API}/${encodeURIComponent(id)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category: newCat })
+          });
+          loadTodos();
+        });
+      });
+    }
+
+    function todoDeleteClick(btn, id) {
+      const item = btn.closest('.todo-item');
+      item.querySelector('.todo-confirm').style.display = 'flex';
+      btn.style.display = 'none';
+    }
+
+    function todoCancelDelete(btn) {
+      const item = btn.closest('.todo-item');
+      item.querySelector('.todo-confirm').style.display = 'none';
+      item.querySelector('.todo-delete-btn').style.display = '';
+    }
+
+    async function todoConfirmDelete(id) {
+      await fetch(`${TODOS_API}/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      loadTodos();
     }
 
     function esc(s) { return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -2015,40 +2123,111 @@
       const tbody = document.getElementById('portfolioPositionsTable');
       tbody.innerHTML = '';
 
-      positions.forEach(position => {
-        const pl = position.unrealized_pl || 0;
-        const plClass = pl >= 0 ? 'pl-positive' : 'pl-negative';
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><strong>${esc(position.symbol)}</strong></td>
-          <td>${esc(position.asset_type || '-')}</td>
-          <td class="text-right">${(position.quantity || 0).toFixed(2)}</td>
-          <td class="text-right">${currencyFormatter.format(position.price || 0)}</td>
-          <td class="text-right">${currencyFormatter.format(position.market_value || 0)}</td>
-          <td class="text-right ${plClass}">${currencyFormatter.format(pl)}</td>
-        `;
-        tbody.appendChild(row);
-      });
+      const totalValue = positions.reduce((sum, p) => sum + (p.market_value || 0), 0);
+
+      const equities = positions.filter(p => p.asset_type === 'EQ');
+      const options = positions.filter(p => p.asset_type === 'OPTN');
+
+      if (equities.length > 0) {
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `<td colspan="7" style="background:#1f2937;font-weight:600;padding:12px;color:#e5e7eb">Equity</td>`;
+        tbody.appendChild(headerRow);
+
+        equities.forEach(position => {
+          const pl = position.unrealized_pl || 0;
+          const plClass = pl >= 0 ? 'pl-negative' : 'pl-positive';
+          const positionValue = position.market_value || 0;
+          const allocationPct = totalValue > 0 ? ((positionValue / totalValue) * 100).toFixed(2) : '0.00';
+
+          const row = document.createElement('tr');
+          row.style.cursor = 'pointer';
+          row.innerHTML = `
+            <td><strong>${esc(position.symbol)}</strong></td>
+            <td>${esc(position.asset_type || '-')}</td>
+            <td class="text-right">${(position.quantity || 0).toFixed(2)}</td>
+            <td class="text-right">${currencyFormatter.format(position.price || 0)}</td>
+            <td class="text-right">${currencyFormatter.format(positionValue)}</td>
+            <td class="text-right" style="font-weight:600">${allocationPct}%</td>
+            <td class="text-right ${plClass}">${currencyFormatter.format(pl)}</td>
+          `;
+
+          const infoRow = document.createElement('tr');
+          infoRow.id = `info-${position.id}`;
+          infoRow.style.display = 'none';
+          infoRow.innerHTML = `<td colspan="7" style="background:#111827;padding:16px;color:#9ca3af">Information for ${position.symbol}...</td>`;
+
+          row.addEventListener('click', () => {
+            infoRow.style.display = infoRow.style.display === 'none' ? 'table-row' : 'none';
+          });
+
+          tbody.appendChild(row);
+          tbody.appendChild(infoRow);
+        });
+      }
+
+      if (options.length > 0) {
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `<td colspan="7" style="background:#1f2937;font-weight:600;padding:12px;color:#e5e7eb">Options</td>`;
+        tbody.appendChild(headerRow);
+
+        options.forEach(position => {
+          const pl = position.unrealized_pl || 0;
+          const plClass = pl >= 0 ? 'pl-negative' : 'pl-positive';
+          const positionValue = position.market_value || 0;
+          const allocationPct = totalValue > 0 ? ((positionValue / totalValue) * 100).toFixed(2) : '0.00';
+
+          const row = document.createElement('tr');
+          row.style.cursor = 'pointer';
+          row.innerHTML = `
+            <td><strong>${esc(position.symbol)}</strong></td>
+            <td>${esc(position.asset_type || '-')}</td>
+            <td class="text-right">${(position.quantity || 0).toFixed(2)}</td>
+            <td class="text-right">${currencyFormatter.format(position.price || 0)}</td>
+            <td class="text-right">${currencyFormatter.format(positionValue)}</td>
+            <td class="text-right" style="font-weight:600">${allocationPct}%</td>
+            <td class="text-right ${plClass}">${currencyFormatter.format(pl)}</td>
+          `;
+
+          const infoRow = document.createElement('tr');
+          infoRow.id = `info-${position.id}`;
+          infoRow.style.display = 'none';
+          infoRow.innerHTML = `<td colspan="7" style="background:#111827;padding:16px;color:#9ca3af">Information for ${position.symbol}...</td>`;
+
+          row.addEventListener('click', () => {
+            infoRow.style.display = infoRow.style.display === 'none' ? 'table-row' : 'none';
+          });
+
+          tbody.appendChild(row);
+          tbody.appendChild(infoRow);
+        });
+      }
     }
 
     function renderPortfolioAllocation(positions) {
       const allocation = {};
+      let optionsTotal = 0;
+
       positions.forEach(p => {
-        const type = p.asset_type || 'Other';
-        allocation[type] = (allocation[type] || 0) + (p.market_value || 0);
+        const value = p.market_value || 0;
+        if (p.asset_type === 'EQ') {
+          allocation[p.symbol] = (allocation[p.symbol] || 0) + value;
+        } else if (p.asset_type === 'OPTN') {
+          optionsTotal += value;
+        }
       });
+
+      if (optionsTotal > 0) {
+        allocation['Options'] = optionsTotal;
+      }
 
       const labels = Object.keys(allocation);
       const data = Object.values(allocation);
-      const colors = [
-        '#8b5cf6', // accent purple
-        '#22d3ee', // accent-2 cyan
-        '#10b981', // success green
-        '#f59e0b', // warning orange
-        '#ef4444', // danger red
-        '#6366f1'  // indigo
+      const baseColors = [
+        '#8b5cf6', '#22d3ee', '#10b981', '#f59e0b', '#ef4444',
+        '#6366f1', '#ec4899', '#14b8a6', '#f97316', '#06b6d4',
+        '#a855f7', '#84cc16', '#0ea5e9', '#e11d48', '#8b5cf6'
       ];
+      const colors = labels.map((_, i) => baseColors[i % baseColors.length]);
 
       const ctx = document.getElementById('portfolioAllocationChart');
       

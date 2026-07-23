@@ -8,8 +8,9 @@ const { promisify } = require('util');
 const execFileAsync = promisify(execFile);
 
 const PORT = process.env.PORT || 3460;
+const HOST = process.env.HOST || '127.0.0.1';
 const DB_PATH = path.join(__dirname, 'tasks.db');
-const TODO_FILE = '/home/debian/projects/todo-list/tasks.json';
+const TODO_DB_PATH = path.join(__dirname, 'todo-list/tasks.db');
 const DEFAULT_PROJECT = 'General';
 const DEFAULT_PRIORITY = 'medium';
 const VALID_PRIORITIES = new Set(['high', 'medium', 'low']);
@@ -456,13 +457,64 @@ function aggregateAgents(agentConfigs, sessions) {
   });
 }
 
-function readTodoTasks() {
-  try {
-    const raw = JSON.parse(fs.readFileSync(TODO_FILE, 'utf8'));
-    return raw;
-  } catch {
-    return [];
+function withTodoDB(fn) {
+  return new Promise((resolve, reject) => {
+    const todoDb = new sqlite3.Database(TODO_DB_PATH, (err) => {
+      if (err) return reject(err);
+      fn(todoDb, (err, result) => {
+        todoDb.close();
+        if (err) reject(err); else resolve(result);
+      });
+    });
+  });
+}
+
+async function migrateTodoDB() {
+  const migrations = [
+    "ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT 'normal'",
+    "ALTER TABLE tasks ADD COLUMN trashed INTEGER DEFAULT 0",
+    "ALTER TABLE tasks ADD COLUMN trashed_at INTEGER",
+  ];
+  for (const sql of migrations) {
+    try {
+      await withTodoDB((db, cb) => db.run(sql, cb));
+    } catch (e) {
+      if (!e.message.includes('duplicate column')) throw e;
+    }
   }
+}
+
+async function getTodoTasks() {
+  return withTodoDB((db, cb) => {
+    db.all(
+      `SELECT id, title, category, status, priority, dueDate, notes,
+              COALESCE(created, ${Date.now()}) AS created
+       FROM tasks WHERE (trashed IS NULL OR trashed = 0) ORDER BY created`,
+      [], cb
+    );
+  });
+}
+
+async function trashTodoTask(id) {
+  return withTodoDB((db, cb) => {
+    db.run('UPDATE tasks SET trashed = 1, trashed_at = ? WHERE id = ?', [Date.now(), id], cb);
+  });
+}
+
+async function updateTodoTask(id, fields) {
+  const allowed = ['category', 'priority'];
+  const sets = Object.keys(fields).filter(k => allowed.includes(k));
+  if (!sets.length) return;
+  const sql = `UPDATE tasks SET ${sets.map(k => `${k} = ?`).join(', ')} WHERE id = ?`;
+  const vals = [...sets.map(k => fields[k]), id];
+  return withTodoDB((db, cb) => db.run(sql, vals, cb));
+}
+
+async function cleanupTrashedTodos() {
+  const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
+  return withTodoDB((db, cb) => {
+    db.run('DELETE FROM tasks WHERE trashed = 1 AND trashed_at < ?', [cutoff], cb);
+  });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -619,9 +671,49 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (url.pathname === '/api/todos' && req.method === 'GET') {
-    const todos = readTodoTasks();
+    const todos = await getTodoTasks();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ tasks: todos }));
+  }
+
+  if (url.pathname === '/api/todos/maintenance' && req.method === 'POST') {
+    try {
+      await cleanupTrashedTodos();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  const todoItemMatch = url.pathname.match(/^\/api\/todos\/([^/]+)$/);
+
+  if (todoItemMatch && req.method === 'DELETE') {
+    try {
+      await trashTodoTask(decodeURIComponent(todoItemMatch[1]));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
+  }
+
+  if (todoItemMatch && req.method === 'PATCH') {
+    try {
+      const body = await new Promise((resolve) => {
+        let data = '';
+        req.on('data', chunk => data += chunk);
+        req.on('end', () => resolve(JSON.parse(data || '{}')));
+      });
+      await updateTodoTask(decodeURIComponent(todoItemMatch[1]), body);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ error: err.message }));
+    }
   }
 
   if (url.pathname === '/api/portfolio/accounts' && req.method === 'GET') {
@@ -802,7 +894,9 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+migrateTodoDB().catch(err => console.error('[Todo] Migration error:', err));
+
+server.listen(PORT, HOST, () => {
   console.log(`Cerebro server running on port ${PORT} (SQLite backend)`);
   
   // Start health check runner

@@ -5,3 +5,9 @@ node_modules/
 *.backup.*
 *.pre-sqlite.*
 tasks.json.bak
+
+# Runtime data
+.env
+tasks.db
+tasks.db-journal
+todo-list/tasks.db

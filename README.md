@@ -24,7 +24,7 @@ A unified, dark-themed control dashboard that brings together OpenClaw control p
   - Columns auto-size to viewport.
 
 - **Todo List**
-  - Reads tasks from `/home/debian/projects/todo-list/tasks.json` and groups by category.
+  - Reads tasks from `./todo-list/tasks.db` (SQLite) and groups by category.
 
 - **Job Search / Investment**
   - Placeholder panels for future expansion.
@@ -43,7 +43,7 @@ Environment variables:
 Local file paths:
 
 - Kanban tasks are stored in `./tasks.json`
-- Todo tasks are read from `/home/debian/projects/todo-list/tasks.json` (see `TODO_FILE` in `server.js` if you need to change this)
+- Todo tasks are read from `./todo-list/tasks.db`
 
 ## Running (Local)
 
