@@ -2592,6 +2592,7 @@
 
     // ===== Reports Tab =====
     const COMPANY_LABELS = { path: 'PATH (UiPath)', hims: 'Hims & Hers' };
+    const MAX_PAST_REPORTS_PER_COMPANY = 5;
     let selectedReportFilename = null;
     let reportLoadRequest = 0;
 
@@ -2611,7 +2612,14 @@
     function renderReports(data) {
       const selector = document.getElementById('reports-selector-list');
       const today = data.today || [];
-      const past = data.past || {};
+      const past = Object.fromEntries(
+        Object.entries(data.past || {}).map(([company, companyReports]) => [
+          company,
+          companyReports.slice(0, MAX_PAST_REPORTS_PER_COMPANY)
+        ])
+      );
+      // Build selection from the same limited selector data. If a previously
+      // selected older report is no longer listed, fall back to the first visible report.
       const reports = [...today, ...Object.values(past).flat()];
 
       if (reports.length === 0) {
@@ -2642,7 +2650,7 @@
         html += `<div class="reports-selector-group">${label}</div>`;
         html += past[company].map(reportButton).join('');
       }
-      html += `<div class="reports-selector-group">${data.total} total</div>`;
+      html += `<div class="reports-selector-group">${data.total} reports available · latest ${MAX_PAST_REPORTS_PER_COMPANY} past reports per company shown</div>`;
       selector.innerHTML = html;
       selector.querySelectorAll('.report-selector-item').forEach(button => {
         button.addEventListener('click', () => selectReport(button.dataset.reportFilename));
